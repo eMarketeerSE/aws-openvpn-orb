@@ -3,11 +3,21 @@ description: >
 # Provide a use-case based example for using this orb.
 # Everything in the `usage` section will be displayed in the orb registry.
 # Comments are not retained.
+
 usage:
   version: 2.1
   orbs:
-    <orb-name>: <namespace>/<orb-name>@1.2.3
+    vpn: emarketeer/openvpn@1.0.0
+  jobs:
+    ping:
+      machine:
+        image: ubuntu-2204:2023.04.2
+      steps:
+        - vpn/install
+        - vpn/connect
+        - run: ping -c 5 192.0.2.1
+        - vpn/disconnect
   workflows:
-    use-my-orb:
+    ping-workflow:
       jobs:
-        - <orb-name>/<job-name>
+        - ping
