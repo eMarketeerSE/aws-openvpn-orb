@@ -9,15 +9,14 @@ usage:
   orbs:
     vpn: emarketeer/openvpn@1.0.0
   jobs:
-    jobs:
-      ping:
-        machine:
-          image: ubuntu-2204:2023.04.2
-        steps:
-          - vpn/install
-          - vpn/connect
-          - run: ping -c 5 192.0.2.1
-          - vpn/disconnect
+    ping:
+      machine:
+        image: ubuntu-2204:2023.04.2
+      steps:
+        - vpn/install
+        - vpn/connect
+        - run: ping -c 5 192.0.2.1
+        - vpn/disconnect
   workflows:
     ping-workflow:
       jobs:
