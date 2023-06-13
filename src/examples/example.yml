@@ -3,17 +3,21 @@ description: >
 # Provide a use-case based example for using this orb.
 # Everything in the `usage` section will be displayed in the orb registry.
 # Comments are not retained.
+
 usage:
   version: 2.1
   orbs:
     vpn: emarketeer/openvpn@1.0.0
+  jobs:
+    jobs:
+      ping:
+        executor: machine
+        steps:
+          - vpn/install
+          - vpn/connect
+          - run: ping -c 5 192.0.2.1
+          - vpn/disconnect
   workflows:
-    example:
+    ping-workflow:
       jobs:
-        ping:
-          executor: machine
-          steps:
-            - vpn/install
-            - vpn/connect
-            - run: ping -c 5 192.0.2.1
-            - vpn/disconnect
+        - ping
