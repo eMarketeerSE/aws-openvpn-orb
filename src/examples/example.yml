@@ -11,7 +11,8 @@ usage:
   jobs:
     jobs:
       ping:
-        executor: machine
+        machine:
+          image: ubuntu-2204:2023.04.2
         steps:
           - vpn/install
           - vpn/connect
