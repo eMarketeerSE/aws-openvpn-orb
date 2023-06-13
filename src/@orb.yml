@@ -37,16 +37,16 @@ commands:
       - run:
           name: Init VPN
           command: |
-            echo $VPN_CONFIG  | base64 --decode >> config.ovpn
-            echo $VPN_CERT    | base64 --decode >> client.crt
-            echo $VPN_KEY     | base64 --decode >> client.key
+            echo $VPN_CONFIG  | base64 --decode >> /tmp/config.ovpn
+            echo $VPN_CERT    | base64 --decode >> /tmp/client.crt
+            echo $VPN_KEY     | base64 --decode >> /tmp/client.key
   connect:
     steps:
       - run:
           name: Connect to VPN
           command: |
             wget -qO- http://checkip.amazonaws.com | tee initial.ip
-            sudo openvpn --config config.ovpn --cert client.crt --key client.key > openvpn.log 2>&1 &
+            sudo openvpn --config /tmp/config.ovpn --cert /tmp/client.crt --key /tmp/client.key > openvpn.log 2>&1 &
             while [ -n "$(ip addr show tun0 2>&1 > /dev/null)" ]; do
               sleep 0.1;
             done
@@ -59,14 +59,7 @@ commands:
           command: sudo killall openvpn || true
       - run:
           name: remove OpenVPN config
-          command: sudo rm config.ovpn
-      - run:
-          name: remove OpenVPN cert
-          command: sudo rm client.crt
-      - run:
-          name: remove OpenVPN key
-          command: sudo rm client.key
-
+          command: sudo rm /tmp/config.ovpn /tmp/client.crt /tmp/client.key
 
 example:
   secure-ping:
@@ -74,7 +67,7 @@ example:
     usage:
       version: 2.1
       orbs:
-        vpn: emarketeer/openvpn@1.0.0
+        vpn: emarketeer/aws-openvpn-orb@1.0.1
       jobs:
         ping:
           machine:
