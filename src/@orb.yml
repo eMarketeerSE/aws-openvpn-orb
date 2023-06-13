@@ -74,7 +74,7 @@ example:
     usage:
       version: 2.1
       orbs:
-        vpn: emarketeer/openvpn@1.0.0
+        vpn: emarketeer/aws-openvpn-orb@1.0.0
       jobs:
         ping:
           machine:
