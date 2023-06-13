@@ -1,15 +1,86 @@
 version: 2.1
 
 description: >
-  Sample orb description
+  Connects to AWS VPC via OpenVPN.
+  This orb is intended to be used in conjunction with the CircleCI machine executor.
+  Configuration is done via environment variables.
+  
+  The following environment variables are required:
+  VPN_CONFIG - OpenVPN client .ovpn config file content base64 encoded
+  VPN_CERT - OpenVPN client .crt file content base64 encoded
+  VPN_KEY - OpenVPN client .key file content base64 encoded
 # What will your orb allow users to accomplish?
 # Descriptions should be short, simple, and informative.
 
 # This information will be displayed in the orb registry and is not mandatory.
 display:
-  home_url: "https://www.example.com/docs"
+  home_url: "https://github.com/eMarketeerSE/aws-openvpn-orb"
   source_url: "https://github.com/eMarketeerSE/aws-openvpn-orb"
 
-# If your orb requires other orbs, you can import them like this. Otherwise remove the "orbs" stanza.
-# orbs:
-#  hello: circleci/hello-build@0.0.5
+executors:
+  default:
+    description: |
+      "Tested only on the CircleCI machine executor, but should work
+      on most debian/ubuntu based images as well"
+    machine: true
+
+commands:
+  install:
+    description: "Install OpenVPN client"
+    steps:
+      - run:
+          name: Install OpenVPN
+          command: |
+            sudo apt-get update # for apt-get to recognise openvpn
+            sudo apt-get remove openvpn # remove ubuntu aptrepo source
+            sudo apt-get update
+            sudo apt-get install openvpn -y
+      - run:
+          name: Init VPN
+          command: |
+            echo $VPN_CONFIG  | base64 --decode >> config.ovpn
+            echo $VPN_CERT    | base64 --decode >> client.crt
+            echo $VPN_KEY     | base64 --decode >> client.key
+  connect:
+    steps:
+      - run:
+          name: Connect to VPN
+          command: |
+            wget -qO- http://checkip.amazonaws.com | tee initial.ip
+            sudo openvpn --config config.ovpn --cert client.crt --key client.key > openvpn.log 2>&1 &
+            while [ -n "$(ip addr show tun0 2>&1 > /dev/null)" ]; do
+              sleep 0.1;
+            done
+            cat openvpn.log
+  disconnect:
+    description: "Disconnect from OpenVPN"
+    steps:
+      - run:
+          name: Disconnect from VPN
+          command: sudo killall openvpn || true
+      - run:
+          name: remove OpenVPN config
+          command: sudo rm config.ovpn
+      - run:
+          name: remove OpenVPN cert
+          command: sudo rm client.crt
+      - run:
+          name: remove OpenVPN key
+          command: sudo rm client.key
+
+
+example:
+  secure-ping:
+    description: "Establish VPN connection and execute a command within it"
+    usage:
+      version: 2.1
+      orbs:
+        vpn: emarketeer/openvpn@1.0.0
+      jobs:
+        ping:
+          executor: vpn/default
+          steps:
+            - vpn/install
+            - vpn/connect
+            - run: ping -c 5 192.0.2.1
+            - vpn/disconnect
