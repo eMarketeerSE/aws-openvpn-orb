@@ -78,7 +78,7 @@ example:
         vpn: emarketeer/openvpn@1.0.0
       jobs:
         ping:
-          executor: vpn/default
+          executor: machine
           steps:
             - vpn/install
             - vpn/connect
