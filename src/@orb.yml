@@ -4,7 +4,6 @@ description: >
   Connects to AWS VPC via OpenVPN.
   This orb is intended to be used in conjunction with the CircleCI machine executor.
   Configuration is done via environment variables.
-  
   The following environment variables are required:
   VPN_CONFIG - OpenVPN client .ovpn config file content base64 encoded
   VPN_CERT - OpenVPN client .crt file content base64 encoded
