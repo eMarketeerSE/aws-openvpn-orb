@@ -57,9 +57,11 @@ commands:
       - run:
           name: Disconnect from VPN
           command: sudo killall openvpn || true
+          when: always
       - run:
           name: remove OpenVPN config
           command: sudo rm /tmp/config.ovpn /tmp/client.crt /tmp/client.key
+          when: always
 
 example:
   secure-ping:
