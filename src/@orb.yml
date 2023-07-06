@@ -51,6 +51,7 @@ commands:
               sleep 0.1;
             done
             cat openvpn.log
+            sleep 5
   disconnect:
     description: "Disconnect from OpenVPN"
     steps:
