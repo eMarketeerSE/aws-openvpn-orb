@@ -50,6 +50,8 @@ commands:
             while [ -n "$(ip addr show tun0 2>&1 > /dev/null)" ]; do
               sleep 0.1;
             done
+            sudo systemd-resolve --flush-caches
+            sudo systemctl restart systemd-resolved
             cat openvpn.log
             sleep 5
   disconnect:
@@ -70,7 +72,7 @@ example:
     usage:
       version: 2.1
       orbs:
-        vpn: emarketeer/aws-openvpn-orb@1.0.1
+        vpn: emarketeer/aws-openvpn-orb@1.0.4
       jobs:
         ping:
           machine:
