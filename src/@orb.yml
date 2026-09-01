@@ -46,10 +46,21 @@ commands:
           name: Connect to VPN
           command: |
             wget -qO- http://checkip.amazonaws.com | tee initial.ip
+            # AWS Client VPN only resolves random-prefixed subdomains of the endpoint DNS name,
+            # and its remote-random-hostname directive is not supported by stock OpenVPN
+            sudo sed -i -e "s/^remote cvpn-/remote $(openssl rand -hex 8).cvpn-/" -e '/^remote-random-hostname/d' /tmp/config.ovpn
             sudo openvpn --config /tmp/config.ovpn --cert /tmp/client.crt --key /tmp/client.key > openvpn.log 2>&1 &
-            while [ -n "$(ip addr show tun0 2>&1 > /dev/null)" ]; do
-              sleep 0.1;
+            for _ in $(seq 1 60); do
+              if ip addr show tun0 > /dev/null 2>&1; then
+                break
+              fi
+              sleep 1
             done
+            if ! ip addr show tun0 > /dev/null 2>&1; then
+              echo "VPN connection failed, openvpn log:"
+              cat openvpn.log
+              exit 1
+            fi
             sudo resolvectl flush-caches
             cat openvpn.log
             sleep 5
